@@ -20,6 +20,7 @@ app.send = function(message) {
     contentType: 'application/JSON',
     success: function(data) {
       console.log('chatterbox: Message sent');
+      app.fetch();
     },
     error: function (data) {
       console.error('chatterbox: Failed to send message');
@@ -64,7 +65,7 @@ app.prependNewMessages = function(data) {
     }
   });
   // set the most recent message time to the most recent message received.
-  app.mostRecentMessageTime = new Date(data.results[0].createdAt);
+  app.mostRecentMessageTime = new Date(data.results[data.results.length - 1].createdAt);
 };
 
 // takes in a message.roomname

@@ -20,22 +20,26 @@ var router = {
   "/classes/room1":{}
 }
 
+var data_file_path = 'data.json';
+
 var static_files = {'/': '../client/index.html',
-                    '/styles/styles.css': '../client/styles/styles.css'
-                    // '/bower_components/jquery/jquery.min.js': '../client/bower_components/styles.css',
-                    // '/bower_components/underscore/underscore-min.js' : '../client/bower_components/underscore/underscore-min.js',
-                    // '/bower_components/backbone/backbone.js' : '../client/bower_components/backbone/backbone.js',
-                    // '/scripts/regex.js' : '../client/scripts/regex.js',
-                    // '/scripts/app.js' : '../client/scripts/app.js'
+                    '/styles/styles.css': '../client/styles/styles.css',
+                     '/bower_components/jquery/jquery.min.js': '../client/bower_components/jquery/jquery.min.js',
+                    '/bower_components/underscore/underscore-min.js' : '../client/bower_components/underscore/underscore-min.js',
+                    '/bower_components/underscore/underscore-min.map' : '../client/bower_components/underscore/underscore-min.map',
+                    '/bower_components/backbone/backbone.js' : '../client/bower_components/backbone/backbone.js',
+                    '/scripts/regex.js' : '../client/scripts/regex.js',
+                    '/scripts/app.js' : '../client/scripts/app.js'
                     };
 
 var file_types = {'/': 'text/html',
-                  '/styles/styles.css': 'text/css'
-                  // '/bower_components/jquery/jquery.min.js': 'application/javascript',
-                  // '/bower_components/underscore/underscore-min.js': 'application/javascript',
-                  // '/bower_components/backbone/backbone.js': 'application/javascript',
-                  // '/scripts/regex.js': 'application/javascript',
-                  // '/scripts/app.js': 'application/javascript'
+                  '/styles/styles.css': 'text/css',
+                   '/bower_components/jquery/jquery.min.js': 'text/javascript',
+                  '/bower_components/underscore/underscore-min.js': 'application/javascript',
+                  '/bower_components/backbone/backbone.js': 'application/javascript',
+                  '/bower_components/underscore/underscore-min.map' : 'text/html',
+                  '/scripts/regex.js': 'application/javascript',
+                  '/scripts/app.js': 'application/javascript'
                   };
 
 var index_path = '../client/index.html'
@@ -48,6 +52,7 @@ serverData.results = [];
 //   roomname: 'spider house',
 //   createdAt: new Date()
 // });
+
 
 var requestHandler = function(request, response) {
   // Request and Response come from node's http module.
@@ -71,9 +76,8 @@ var requestHandler = function(request, response) {
     //   console.log(data);
     //   response.end(data);
     // });
-
     var filePath = path.join(__dirname, static_files[request.url]);
-    console.log(filePath);
+
     //var stat = fileSystem.statSync(filePath);
     var readStream = fs.createReadStream(filePath);
     // We replaced all the event handlers with a simple call to readStream.pipe()
@@ -154,9 +158,31 @@ var handlePostRequest = function (request, response) {
     serverData.results.push(dataObj);
 
     response.end('Message posted on server');
+    // json stringify data and save to file
+    writeToFile();
   });
 
 };
+
+var writeToFile = function(){
+  fs.writeFile(data_file_path, JSON.stringify(serverData) , function(err) {
+    if(err) {
+        return console.log(err);
+    }
+
+    console.log("The file was saved!");
+  });
+}
+
+var readFromFile = function(){
+  fs.readFile(data_file_path, function(err, data) {
+    if(err) {
+        return console.log(err);
+    }
+    serverData = JSON.parse(data);
+    return serverData;
+  });
+}
 
 var handleOptionsRequest = function(request, response){
   var headers = defaultCorsHeaders;
@@ -181,4 +207,11 @@ var defaultCorsHeaders = {
   "access-control-max-age": 10 // Seconds.
 };
 
+var initialize = function(){
+  readFromFile();
+}
+
+initialize();
+
 module.exports.requestHandler = requestHandler;
+//module.exports.init = initialize;
